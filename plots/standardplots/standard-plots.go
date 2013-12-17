@@ -1,4 +1,4 @@
-package main
+package standardplots
 
 import (
 	"code.google.com/p/plotinum/plot"
@@ -50,11 +50,11 @@ func sortBothArrays(ids []string, values []float64) ([]string, []float64) {
 	return ids, values
 }
 
-func plotSolutionCosts(title string, dss []*rdb.Dataset) {
-	plotXvsY(title, dss, "final sol cost", "Solution Cost", "level", "Instance")
+func PlotSolutionCosts(title string, dss []*rdb.Dataset) {
+	PlotXvsY(title, dss, "final sol cost", "Solution Cost", "level", "Instance")
 }
 
-func plotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValuesKey, xValuesLabel string) {
+func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValuesKey, xValuesLabel string) {
 	p, err := plot.New()
 	if err != nil {
 		panic(err)
@@ -70,7 +70,7 @@ func plotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 
 	for i := range dss {
 		
-		values, ids := dss[i].GetDatasetFloatValues(yValuesKey, xValuesKey)
+		values, ids := dss[i].GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		if i == 0 {
 			ids, values = sortBothArrays(ids, values)
@@ -101,11 +101,11 @@ func plotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 	}
 }
 
-func plotSolutionCostsFactorOfBest(title string, dss []*rdb.Dataset) {
-	plotXvsFactorBestY(title, dss, "final sol cost", "Factor of Best Found Solution", "level", "Instance")
+func PlotSolutionCostsFactorOfBest(title string, dss []*rdb.Dataset) {
+	PlotXvsFactorBestY(title, dss, "final sol cost", "Factor of Best Found Solution", "level", "Instance")
 }
 
-func plotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValuesKey, xValuesLabel string) {
+func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValuesKey, xValuesLabel string) {
 	p, err := plot.New()
 	if err != nil {
 		panic(err)
@@ -127,7 +127,7 @@ func plotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLab
 	ids := make([][]string, len(dss))
 
 	for i := range values {
-		values[i], ids[i] = dss[i].GetDatasetFloatValues(yValuesKey, xValuesKey)
+		values[i], ids[i] = dss[i].GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		for j := range values[i] {
 			if values[i][j] < bests[j] {

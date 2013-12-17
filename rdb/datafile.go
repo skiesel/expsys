@@ -33,6 +33,37 @@ func newDatafile(filename string) *Datafile {
 	return df
 }
 
+func (df Datafile) addPathKeys(baseDirectory string) {
+	pathPiece := strings.Replace(df.path, baseDirectory, "", -1)
+	pathPiece = strings.Trim(pathPiece, "/")
+	keyValues := strings.Split(pathPiece, "/")
+
+	currentPath := baseDirectory
+	for i := range keyValues {
+		key := getKeyInDirectory(currentPath)
+		df.checkAndAddKeyValue(key, keyValues[i])
+		currentPath = strings.Join([]string{currentPath, keyValues[i]}, "/") 
+	}
+}
+
+func (df Datafile) checkAndAddKeyValue(key string, value string) {
+		boundValue, keyExists := df.values[key]
+		if keyExists {
+			if boundValue != value {
+				fmt.Printf("Trying to add mismatched values for key (\"%s\") (\"%s\", \"%s\") in %s\n",
+					key, boundValue, value, df.path)
+				panic("Datafile: Mismatched Key Values")
+			}
+		} else {
+			df.values[key] = value
+		}
+}
+
+func (df Datafile) hasKey(key string) bool {
+	_, keyExists := df.values[key]
+	return keyExists
+}
+
 func parseKeyValuePair(str string) (key string, value string, ok bool) {
 	tokens := strings.Split(str, "\"")
 	if len(tokens) >= 4 {
@@ -54,7 +85,7 @@ func (df Datafile) addDataRow(line string) {
 		return
 	}
 
-	df.values[key] = value
+	df.checkAndAddKeyValue(key, value)
 }
 
 func (df Datafile) dump() {

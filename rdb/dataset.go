@@ -17,11 +17,39 @@ func newDataset(name string, files []string) *Dataset {
 	return ds
 }
 
-func (ds Dataset) GetDatasetFloatValues(key string, id string) (values []float64, ids []string) {
+func (ds Dataset) addPathKeys(baseDirectory string) {
+	for i := range ds.datafiles {
+		ds.datafiles[i].addPathKeys(baseDirectory)
+	}
+}
+
+func (ds Dataset) GetDatasetFloatValues(key string) (values []float64) {
+	for i := range ds.datafiles {
+		values = append(values, ds.datafiles[i].getFloatValue(key))
+	}
+	return
+}
+
+func (ds Dataset) GetDatasetFloatValuesPair(key string, id string) (values []float64, ids []string) {
 	for i := range ds.datafiles {
 		ids = append(ids, ds.datafiles[i].getStringValue(id))
 		values = append(values, ds.datafiles[i].getFloatValue(key))
 	}
+	return
+}
+
+func (ds Dataset) GetDatasetSum(key string) (values float64) {
+	for i := range ds.datafiles {
+		values += ds.datafiles[i].getFloatValue(key)
+	}
+	return
+}
+
+func (ds Dataset) GetDatasetAverage(key string) (values float64) {
+	for i := range ds.datafiles {
+		values += ds.datafiles[i].getFloatValue(key)
+	}
+	values /= float64(len(ds.datafiles))
 	return
 }
 
@@ -31,4 +59,15 @@ func (ds Dataset) GetName() string {
 
 func (ds Dataset) GetSize() int {
 	return len(ds.datafiles)
+}
+
+func (ds Dataset) HasKey(key string) bool {
+	hasKey := true
+	for i := range ds.datafiles {
+		if ! ds.datafiles[i].hasKey(key) {
+			hasKey = false
+			break
+		}
+	}
+	return hasKey
 }

@@ -8,13 +8,21 @@ import (
 
 // Retrieve a single dataset defined by the rdb path rooted at directory
 // and filtered by keys
-func GetDataset(directory string, keys map[string]string, name string) *Dataset {
-	return newDataset(name, getMatchingFiles(directory, keys))
+func GetDataset(directory string, keys map[string]string, name string, pathKeys bool) *Dataset {
+	ds := newDataset(name, getMatchingFiles(directory, keys))
+	if pathKeys {
+		ds.addPathKeys(directory)
+	}
+	return ds 
+}
+
+func GetDatasetWithPathKeys(directory string, keys map[string]string, name string) *Dataset {
+	return GetDataset(directory, keys, name, true)
 }
 
 // Retrieve a set of datasets defined by the rdb path rooted at directory
 // and filtered by each key set in keys individually
-func GetDatasets(directory string, keys []map[string]string, names []string) []*Dataset {
+func GetDatasets(directory string, keys []map[string]string, names []string, pathKeys bool) []*Dataset {
 	if len(keys) != len(names) {
 		fmt.Printf("%d names provided for %d datasets!", len(names), len(keys))
 		panic("Slice length mismatch")
@@ -22,9 +30,13 @@ func GetDatasets(directory string, keys []map[string]string, names []string) []*
 
 	datasets := make([]*Dataset, len(keys))
 	for i := range keys {
-		datasets[i] = GetDataset(directory, keys[i], names[i])
+		datasets[i] = GetDataset(directory, keys[i], names[i], pathKeys)
 	}
 	return datasets
+}
+
+func GetDatasetsWithPathKeys(directory string, keys []map[string]string, names []string) []*Dataset {
+	return GetDatasets(directory, keys, names, true)
 }
 
 // A recursive function that crawls the directory structure starting at
@@ -34,22 +46,31 @@ func getMatchingFiles(directory string, filter map[string]string) []string {
 	return crawlAndCollect(directory, filter)
 }
 
+func getKeyInDirectory(directory string) string {
+	fInfo, error := ioutil.ReadDir(directory)
+
+	if error != nil { // there was an error
+		panic(error)
+	} else {
+		for i := range fInfo {
+			if strings.Contains(fInfo[i].Name(), "KEY=") {
+				return strings.SplitAfter(fInfo[i].Name(), "KEY=")[1]
+			}
+		}
+	}
+	panic("No key file found")
+}
+
 func crawlAndCollect(directory string, filter map[string]string) []string {
 	returnPaths := make([]string, 0)
 
 	fInfo, error := ioutil.ReadDir(directory)
 
 	if error != nil { // there was an error
-		fmt.Printf(error.Error())
+		panic(error)
 	} else {
 		//look for the key file in this directory
-		filterKey := ""
-		for i := range fInfo {
-			if strings.Contains(fInfo[i].Name(), "KEY=") {
-				filterKey = strings.SplitAfter(fInfo[i].Name(), "KEY=")[1]
-				break
-			}
-		}
+		filterKey := getKeyInDirectory(directory)
 
 		var include func(string) bool = nil
 		if filter[filterKey] == "" {
