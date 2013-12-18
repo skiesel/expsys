@@ -4,19 +4,25 @@ import (
 	"math"
 )
 
-func StdDevAndVariance(values []float64) (stddev, variance float64) {
-	average := 0.
+func MeanStdDevVariance(values []float64) (mean, stddev, variance float64) {
 	for i := range values {
-		average += values[i]
+		mean += values[i]
 	}
-	average /= float64(len(values))
+	mean /= float64(len(values))
 
 	for i := range values {
-		diff := values[i] - average
+		diff := values[i] - mean
 		variance += diff * diff
 	}
 
 	variance /= float64(len(values))
 	stddev = math.Sqrt(variance)
+	return
+}
+
+func Sum(values []float64) (sum float64) {
+	for i := range values {
+		sum += values[i]
+	}
 	return
 }

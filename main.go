@@ -28,5 +28,5 @@ func main() {
 	realtimeplots.TrafficCollisionWFFiltered(dss)
 
 	standardtables.SolutionCostSumsTable(dss)
-	standardtables.SolutionCostAveragesTable(dss)
+	standardtables.SolutionCostMeansTable(dss)
 }

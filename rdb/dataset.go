@@ -1,32 +1,38 @@
 package rdb
 
+// You guessed it, a dataset
 type Dataset struct {
 	name string
 	datafiles []*Datafile
 }
 
+// Create a new dataset with this name and using these file paths
 func newDataset(name string, files []string) *Dataset {
 	ds := new(Dataset)
 	ds.name = name
 	ds.datafiles = make([]*Datafile, len(files))
 
 	for i := range files {
-		ds.datafiles[i] = newDatafile(files[i])
+		ds.datafiles[i] = newDatafileFromRDB(files[i])
 	}
 
 	return ds
 }
 
-func (ds Dataset) FilterDataset(filter func(string)bool, key string) (filtered *Dataset) {
+// Filter this dataset, returning a new one, that includes datafiles whose values
+// bound to "key" cause the "include" function to return true
+func (ds Dataset) FilterDataset(include func(string)bool, key string) (filtered *Dataset) {
 	filtered.name = ds.name
 	for _, df := range ds.datafiles {
-		if filter(df.getStringValue(key)) {
+		if include(df.getStringValue(key)) {
 			filtered.datafiles = append(filtered.datafiles, df)
 		}
 	}
 	return
 }
 
+// Do all the datafiles in this dataset with values bound to "key"
+// cause "test" to return true
 func (ds Dataset) TestDataset(test func(string)bool, key string) bool {
 	for _, df := range ds.datafiles {
 		if !test(df.getStringValue(key)) {
@@ -36,12 +42,17 @@ func (ds Dataset) TestDataset(test func(string)bool, key string) bool {
 	return true
 }
 
+// Using the the retained path value in the datafile,
+// add all the path keys starting from baseDirectory
+// df.path == baseDirectory/keysToBeUsed
 func (ds Dataset) addPathKeys(baseDirectory string) {
 	for _, df := range ds.datafiles {
-		df.addPathKeys(baseDirectory)
+		df.addRDBPathKeys(baseDirectory)
 	}
 }
 
+// Accumulate a slice of float values bound to "key" across all
+// datafiles in this dataset
 func (ds Dataset) GetDatasetFloatValues(key string) (values []float64) {
 	for _, df := range ds.datafiles {
 		values = append(values, df.getFloatValue(key))
@@ -49,6 +60,8 @@ func (ds Dataset) GetDatasetFloatValues(key string) (values []float64) {
 	return
 }
 
+// Accumulate a slice of string values bound to "key" across all
+// datafiles in this dataset
 func (ds Dataset) GetDatasetStringValues(key string) (values []string) {
 	for _, df := range ds.datafiles {
 		values = append(values, df.getStringValue(key))
@@ -56,6 +69,8 @@ func (ds Dataset) GetDatasetStringValues(key string) (values []string) {
 	return
 }
 
+// Accumulate a slice of int values bound to "key" across all
+// datafiles in this dataset
 func (ds Dataset) GetDatasetIntegerValues(key string) (values []int64) {
 	for _, df := range ds.datafiles {
 		values = append(values, df.getIntegerValue(key))
@@ -63,6 +78,9 @@ func (ds Dataset) GetDatasetIntegerValues(key string) (values []int64) {
 	return
 }
 
+// Accumulate a slice of float values bound to "key" across all
+// datafiles in this dataset, but also include the associated string values 
+// bound to "id" -- this is useful when trying to match up data based on an identifier like instance
 func (ds Dataset) GetDatasetFloatValuesPair(key string, id string) (values []float64, ids []string) {
 	for _, df := range ds.datafiles {
 		ids = append(ids, df.getStringValue(id))
@@ -71,29 +89,17 @@ func (ds Dataset) GetDatasetFloatValuesPair(key string, id string) (values []flo
 	return
 }
 
-func (ds Dataset) GetDatasetSum(key string) (values float64) {
-	for _, df := range ds.datafiles {
-		values += df.getFloatValue(key)
-	}
-	return
-}
-
-func (ds Dataset) GetDatasetAverage(key string) (values float64) {
-	for _, df := range ds.datafiles {
-		values += df.getFloatValue(key)
-	}
-	values /= float64(len(ds.datafiles))
-	return
-}
-
+// Return the dataset's name
 func (ds Dataset) GetName() string {
 	return ds.name
 }
 
+// Return the number of datafiles in the dataset
 func (ds Dataset) GetSize() int {
 	return len(ds.datafiles)
 }
 
+// Checks if all datafiles in the dataset have "key" bound
 func (ds Dataset) HasKey(key string) bool {
 	hasKey := true
 	for _, df := range ds.datafiles {

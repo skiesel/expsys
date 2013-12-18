@@ -5,36 +5,17 @@ import (
 	"code.google.com/p/plotinum/plotter"
 	"code.google.com/p/plotinum/plotutil"
 	"github.com/skiesel/expsys/rdb"
+	"github.com/skiesel/expsys/plots"
 	"strconv"
 	"fmt"
 )
 
-func group(ds *rdb.Dataset, key string) (grouped map[string]*rdb.Dataset) {
-	values := ds.GetDatasetStringValues(key)
-	valueSet := make(map[string]string, 0)
-	for _, value := range values {
-		_, exists := valueSet[value]
-		if !exists {
-			valueSet[value] = value
-		}
-	}
-
-	for value, _ := range valueSet {
-		filter := func(str string)bool {
-			return str == value
-		}
-		grouped[value] = ds.FilterDataset(filter, key)
-	}
-	return
-}
-
-func groupByWfs(ds *rdb.Dataset, wfs []float64) (grouped map[float64]*rdb.Dataset) {
-	groupedLookahead := group(ds, "lookahead")
+func groupByWfs(groupdByLookahead map[string]*rdb.Dataset, wfs []float64) (grouped map[float64]*rdb.Dataset) {
 	for _, wf := range wfs {
 		
 		var maxLookahead int64
 		maxLookahead = 0
-		for lookaheadStr, ds := range groupedLookahead {
+		for lookaheadStr, ds := range groupdByLookahead {
 			lookahead, err := strconv.ParseInt(lookaheadStr, 10, 0)
 			if err != nil {
 				fmt.Printf("groupByWfs -- failed to parse lookahead value (%s)\n", lookaheadStr)
@@ -70,9 +51,21 @@ func TrafficCollisionWFFiltered(dss []*rdb.Dataset) {
 
 	wfs := []float64{1., 0.1, 0.01, 0.001, 0.0001, 0.00001}
 	groupedDss := make([]map[float64]*rdb.Dataset, len(dss))
+
+
 	for i, ds := range dss {
-		groupedDss[i] = groupByWfs(ds, wfs)
+		// Split the dataset up by the lookahead sizes
+		// So you would end up with a map with entries like this
+		// groupedLookahead["1000"] = dataset containing only datfiles created with a lookahead 1000
+		groupedLookahead := datautils.Group(ds, "lookahead")
+
+		// Based on the lookahead map above, pick the best lookahead
+		// that still satisfies each individual wf, this will return a map like
+		// groupedDss[1.] = a dataset where all instances were solved satisfying this wf (prev grouped by lookahead)
+		// groupedDss[0.1] = a dataset where all instances were solved satisfying this wf
+		groupedDss[i] = groupByWfs(groupedLookahead, wfs)
 	}
+
 
 	var plottingArgs []interface{}
 	var errorBarArgs []interface{}

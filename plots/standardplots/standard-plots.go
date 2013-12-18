@@ -5,50 +5,10 @@ import (
 	"code.google.com/p/plotinum/plotter"
 	"code.google.com/p/plotinum/plotutil"
 	"github.com/skiesel/expsys/rdb"
+	"github.com/skiesel/expsys/plots"
 	"math"
 	"strings"
 )
-
-func matchKeys(targetIds []string, ids []string, values []float64) ([]string, []float64) {
-	for i := range targetIds {
-		for j := i; j < len(ids); j++ {
-			if targetIds[i] == ids[j] {
-				if i != j {
-					temp := ids[i]
-					ids[i] = ids[j]
-					ids[j] = temp
-					temp2 := values[i]
-					values[i] = values[j]
-					values[j] = temp2
-				}
-				break;
-			}
-		}
-	}
-
-	return ids, values
-}
-
-func sortBothArrays(ids []string, values []float64) ([]string, []float64) {
-	for i := range values {
-		min := values[i]
-		minIndex := i
-		for j := i; j < len(ids); j++ {
-			if values[j] < min {
-				min = values[j]
-				minIndex = j
-			}
-		}
-		temp := ids[i]
-		ids[i] = ids[minIndex]
-		ids[minIndex] = temp
-		temp2 := values[i]
-		values[i] = values[minIndex]
-		values[minIndex] = temp2
-	}
-
-	return ids, values
-}
 
 func PlotSolutionCosts(title string, dss []*rdb.Dataset) {
 	PlotXvsY(title, dss, "final sol cost", "Solution Cost", "level", "Instance")
@@ -73,10 +33,10 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 		values, ids := ds.GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		if i == 0 {
-			ids, values = sortBothArrays(ids, values)
+			ids, values = datautils.SortBothArrays(ids, values)
 			targetIds = ids
 		} else {
-			ids, values = matchKeys(targetIds, ids, values)
+			ids, values = datautils.MatchKeys(targetIds, ids, values)
 		}
 
 		pts := make(plotter.XYs, len(values))
@@ -140,11 +100,11 @@ func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLab
 	for i := range ids[0] {
 		targetIds[i] = ids[0][i]
 	}
-	targetIds, bests = sortBothArrays(targetIds, bests)
+	targetIds, bests = datautils.SortBothArrays(targetIds, bests)
 
 	for i := range dss {
 
-		ids[i], values[i] = matchKeys(targetIds, ids[i], values[i])
+		ids[i], values[i] = datautils.MatchKeys(targetIds, ids[i], values[i])
 
 		pts := make(plotter.XYs, len(values[i]))
 		for j := range pts {
