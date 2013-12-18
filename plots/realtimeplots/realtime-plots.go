@@ -10,12 +10,12 @@ import (
 	"fmt"
 )
 
-func groupByWfs(groupdByLookahead map[string]*rdb.Dataset, wfs []float64) (grouped map[float64]*rdb.Dataset) {
+func groupByWfs(groupedByLookahead map[string]*rdb.Dataset, wfs []float64) (grouped map[float64]*rdb.Dataset) {
 	for _, wf := range wfs {
 		
 		var maxLookahead int64
 		maxLookahead = 0
-		for lookaheadStr, ds := range groupdByLookahead {
+		for lookaheadStr, ds := range groupedByLookahead {
 			lookahead, err := strconv.ParseInt(lookaheadStr, 10, 0)
 			if err != nil {
 				fmt.Printf("groupByWfs -- failed to parse lookahead value (%s)\n", lookaheadStr)
