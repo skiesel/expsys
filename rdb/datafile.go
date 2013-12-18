@@ -39,10 +39,10 @@ func (df Datafile) addPathKeys(baseDirectory string) {
 	keyValues := strings.Split(pathPiece, "/")
 
 	currentPath := baseDirectory
-	for i := range keyValues {
+	for _, keyValue := range keyValues {
 		key := getKeyInDirectory(currentPath)
-		df.checkAndAddKeyValue(key, keyValues[i])
-		currentPath = strings.Join([]string{currentPath, keyValues[i]}, "/") 
+		df.checkAndAddKeyValue(key, keyValue)
+		currentPath = strings.Join([]string{currentPath, keyValue}, "/") 
 	}
 }
 

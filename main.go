@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/skiesel/expsys/rdb"
 	"github.com/skiesel/expsys/plots/standardplots"
+	"github.com/skiesel/expsys/plots/realtimeplots"
 	"github.com/skiesel/expsys/tables/standardtables"
 )
 
@@ -22,6 +23,9 @@ func main() {
 
 	standardplots.PlotSolutionCosts("Solution Costs", dss)
 	standardplots.PlotSolutionCostsFactorOfBest("Solution Costs Factor Best", dss)
+
+
+	realtimeplots.TrafficCollisionWFFiltered(dss)
 
 	standardtables.SolutionCostSumsTable(dss)
 	standardtables.SolutionCostAveragesTable(dss)

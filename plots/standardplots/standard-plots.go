@@ -68,9 +68,9 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 
 	var targetIds []string;
 
-	for i := range dss {
+	for i, ds := range dss {
 		
-		values, ids := dss[i].GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
+		values, ids := ds.GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		if i == 0 {
 			ids, values = sortBothArrays(ids, values)
@@ -84,7 +84,7 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 			pts[j].X = float64(j)
 			pts[j].Y = values[j]
 		}
-		plottingArgs = append(plottingArgs, dss[i].GetName())
+		plottingArgs = append(plottingArgs, ds.GetName())
 		plottingArgs = append(plottingArgs, pts)
 	}
 

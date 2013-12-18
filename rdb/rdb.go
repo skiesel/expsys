@@ -85,8 +85,8 @@ func crawlAndCollect(directory string, filter map[string]string) []string {
 
 		directories := make([]string, 0)
 
-		for i := range fInfo {
-			filename := fInfo[i].Name()
+		for _, file := range fInfo {
+			filename := file.Name()
 			isKeyFile := strings.Contains(filename, "KEY=")
 			isDotFile := filename[0] == '.'
 
@@ -94,7 +94,7 @@ func crawlAndCollect(directory string, filter map[string]string) []string {
 				continue
 			}
 
-			isDir := fInfo[i].IsDir()
+			isDir := file.IsDir()
 			relativePath := strings.Join([]string{directory, filename}, "/")
 
 			if isDir {
@@ -104,8 +104,8 @@ func crawlAndCollect(directory string, filter map[string]string) []string {
 			}
 		}
 
-		for i := range directories {
-			returnPaths = append(returnPaths, crawlAndCollect(directories[i], filter)...)
+		for _, directory := range directories {
+			returnPaths = append(returnPaths, crawlAndCollect(directory, filter)...)
 		}
 	}
 	return returnPaths
