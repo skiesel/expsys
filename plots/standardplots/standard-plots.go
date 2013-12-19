@@ -34,7 +34,7 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 		values, ids := ds.GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		if i == 0 {
-			ids, values = datautils.SortBothArrays(ids, values)
+//			ids, values = datautils.SortBothArrays(ids, values)
 			targetIds = ids
 		} else {
 			ids, values = datautils.MatchKeys(targetIds, ids, values)
@@ -102,8 +102,8 @@ func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLab
 	for i := range ids[0] {
 		targetIds[i] = ids[0][i]
 	}
-	targetIds, bests = datautils.SortBothArrays(targetIds, bests)
-
+	//targetIds, bests = datautils.SortBothArrays(targetIds, bests)
+	
 	for i := range dss {
 
 		ids[i], values[i] = datautils.MatchKeys(targetIds, ids[i], values[i])

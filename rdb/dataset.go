@@ -28,6 +28,7 @@ func (ds Dataset) AddTransformedKey(key string, transform func(string) string, n
 // Filter this dataset, returning a new one, that includes datafiles whose values
 // bound to "key" cause the "include" function to return true
 func (ds Dataset) FilterDataset(include func(string)bool, key string) (filtered *Dataset) {
+	filtered = &Dataset{}
 	filtered.name = ds.name
 	for _, df := range ds.datafiles {
 		if include(df.getStringValue(key)) {

@@ -1,6 +1,7 @@
 package rdb
 
-func FilterIntersectionSolved(dss []*Dataset, identifier string) ([]*Dataset) {
+func FilterIntersectionSolved(dss []*Dataset, identifier string,
+															testSolved func(string)bool, solvedKey string) ([]*Dataset) {
 	solved := make(map[string]bool)
 
 	for i, ds := range dss {
@@ -14,8 +15,8 @@ func FilterIntersectionSolved(dss []*Dataset, identifier string) ([]*Dataset) {
 			for key, _ := range solved {
 				isSolved := false
 				for _, df := range ds.datafiles {
-					if df.getStringValue(identifier) == key {
-						if df.getFloatValue("final sol cost") >= 0 {
+					if df.hasKey(identifier) && df.getStringValue(identifier) == key {
+						if df.hasKey(solvedKey) && testSolved(df.getStringValue(solvedKey)) {
 							isSolved = true
 						}
 						break
