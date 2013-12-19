@@ -19,6 +19,12 @@ func newDataset(name string, files []string) *Dataset {
 	return ds
 }
 
+func (ds Dataset) AddTransformedKey(key string, transform func(string) string, newKey string) {
+	for _, df := range ds.datafiles {
+		df.addKey(newKey, transform(df.getStringValue(key)))
+	}
+}
+
 // Filter this dataset, returning a new one, that includes datafiles whose values
 // bound to "key" cause the "include" function to return true
 func (ds Dataset) FilterDataset(include func(string)bool, key string) (filtered *Dataset) {

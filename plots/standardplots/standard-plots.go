@@ -20,6 +20,7 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 		panic(err)
 	}
 
+
 	p.Title.Text = title
 	p.X.Label.Text = xValuesLabel
 	p.Y.Label.Text = yValuesLabel
@@ -53,7 +54,7 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel , xValu
 		panic(err)
 	}
 
-	plotFilename := strings.Replace(title + ".png", " ", "", -1)
+	plotFilename := strings.Replace(title + ".eps", " ", "", -1)
 
 	err = p.Save(4, 4, plotFilename)
 	if err != nil {
@@ -74,7 +75,8 @@ func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLab
 	p.Title.Text = title
 	p.X.Label.Text = xValuesLabel
 	p.Y.Label.Text = yValuesLabel
-
+	p.Legend.Top = true
+	
 	var plottingArgs []interface{}
 
 	bests := make([]float64, dss[0].GetSize())
@@ -120,7 +122,7 @@ func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLab
 		panic(err)
 	}
 
-	plotFilename := strings.Replace(title + ".png", " ", "", -1)
+	plotFilename := strings.Replace(title + ".eps", " ", "", -1)
 
 	err = p.Save(4, 4, plotFilename)
 	if err != nil {

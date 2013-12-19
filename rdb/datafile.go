@@ -99,6 +99,10 @@ func (df Datafile) checkAndAddKeyValue(key string, value string) {
 		}
 }
 
+func (df Datafile) addKey(key string, value string) {
+	df.checkAndAddKeyValue(key, value)
+}
+
 // Does this datafile have this key bound
 func (df Datafile) hasKey(key string) bool {
 	_, keyExists := df.values[key]
