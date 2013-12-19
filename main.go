@@ -30,15 +30,17 @@ func main() {
 
 	dss := rdb.GetDatasetsWithPathKeys("/Users/skiesel/Desktop/matt-java/edu.unh.ai.search.ml/bin/data", filters, names)
 
-	// solvedTest := func(solutionCost string) bool {
-	// 	val, err := strconv.ParseFloat(solutionCost, 0)
-	// 	if err != nil {
-	// 		return false
-	// 	}
-	// 	return val >= 0
-	// }
+	solvedTest := func(solutionCost string) bool {
+		val, err := strconv.ParseFloat(solutionCost, 0)
+		if err != nil {
+			return false
+		}
+		return val >= 0
+	}
 
-//	dss = rdb.FilterIntersectionSolved(dss, "num", solvedTest, "solution cost")
+  dss = rdb.FilterOutUnsolved(dss, "num", solvedTest, "solution cost")
+
+
 
 	log10 := func(v string) string {
 		val, err := strconv.ParseFloat(v, 0)

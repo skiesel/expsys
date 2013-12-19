@@ -19,6 +19,18 @@ func newDataset(name string, files []string) *Dataset {
 	return ds
 }
 
+func (ds Dataset) copyDataset() *Dataset {
+	newDs := new(Dataset)
+	newDs.name = ds.name
+	newDs.datafiles = make([]*Datafile, len(ds.datafiles))
+
+	for i, df := range ds.datafiles {
+		newDs.datafiles[i] = df.copyDatafile()
+	}
+
+	return newDs
+}
+
 func (ds Dataset) AddTransformedKey(key string, transform func(string) string, newKey string) {
 	for _, df := range ds.datafiles {
 		df.addKey(newKey, transform(df.getStringValue(key)))

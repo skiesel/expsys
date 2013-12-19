@@ -35,6 +35,13 @@ func newDatafileFromRDB(filename string) *Datafile {
 	return df
 }
 
+func (df Datafile) copyDatafile() *Datafile {
+	newDf := new(Datafile)
+	newDf.path = df.path
+	newDf.values = df.values
+	return newDf
+}
+
 // Retroactively add keys specified in the path used to construct this datafile
 // but ignore any overlap between df.path and baseDirectory
 func (df Datafile) addRDBPathKeys(baseDirectory string) {

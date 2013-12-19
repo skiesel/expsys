@@ -1,6 +1,10 @@
 package rdb
 
-func FilterIntersectionSolved(dss []*Dataset, identifier string,
+import (
+	"strconv"
+)
+
+func FilterOutUnsolved(dss []*Dataset, identifier string,
 															testSolved func(string)bool, solvedKey string) ([]*Dataset) {
 	solved := make(map[string]bool)
 
@@ -40,4 +44,37 @@ func FilterIntersectionSolved(dss []*Dataset, identifier string,
 		filtered[i] = ds.FilterDataset(includeThese, identifier)
 	}
 	return filtered
+}
+
+
+func AddFactorBest(dss []*Dataset, identifier string, key string, newKey string) ([]*Dataset) {
+
+	bests := map[string]float64{}
+
+	for _, ds := range dss {
+		values, ids := ds.GetDatasetFloatValuesPair(key, identifier)
+
+		for j := range values {
+			best, bound := bests[ids[j]]
+			if !bound || values[j] < best {
+					bests[ids[j]] = values[j]
+			}
+		}
+	}
+	
+	newDss := make([]*Dataset, len(dss))
+
+	for i, ds := range dss {
+		newDss[i] = ds.copyDataset()
+	}
+
+	for _, ds := range newDss {
+		for _, df := range ds.datafiles {
+			current := df.getFloatValue(key)
+			best := bests[df.getStringValue(identifier)]
+			df.addKey(newKey, strconv.FormatFloat(current / best, 'f', 15, 64))
+		}
+	}
+
+	return newDss
 }
