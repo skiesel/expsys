@@ -58,6 +58,7 @@ func getKeyInDirectory(directory string) string {
 			}
 		}
 	}
+	fmt.Println("No key file found in ", directory)
 	panic("No key file found")
 }
 
