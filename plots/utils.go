@@ -54,7 +54,7 @@ func SortBothArrays(ids []string, values []float64) ([]string, []float64) {
 	return newids, newvalues
 }
 
-func Group(ds *rdb.Dataset, key string) (grouped map[string]*rdb.Dataset) {
+func Group(ds *rdb.Dataset, key string) map[string]*rdb.Dataset {
 	values := ds.GetDatasetStringValues(key)
 	valueSet := make(map[string]string, 0)
 	for _, value := range values {
@@ -64,11 +64,13 @@ func Group(ds *rdb.Dataset, key string) (grouped map[string]*rdb.Dataset) {
 		}
 	}
 
+	grouped := make(map[string]*rdb.Dataset)
+
 	for value, _ := range valueSet {
 		filter := func(str string)bool {
 			return str == value
 		}
-		grouped[value] = ds.FilterDataset(filter, key)
+		grouped[value] = ds.FilterDataset(filter, key).RenameDataset(ds.GetName() + " " + value)
 	}
-	return
+	return grouped
 }

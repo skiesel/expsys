@@ -31,6 +31,12 @@ func (ds Dataset) copyDataset() *Dataset {
 	return newDs
 }
 
+func (ds Dataset) RenameDataset(name string) *Dataset {
+     newDss := ds.copyDataset()
+     newDss.name = name
+     return newDss
+}
+
 func (ds Dataset) AddTransformedKey(key string, transform func(string) string, newKey string) {
 	for _, df := range ds.datafiles {
 		df.addKey(newKey, transform(df.getStringValue(key)))
