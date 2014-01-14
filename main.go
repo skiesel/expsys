@@ -5,9 +5,19 @@ import (
 	"github.com/skiesel/expsys/plots/standardplots"
 	"github.com/skiesel/expsys/rdb"
 	"strconv"
+	"flag"
+)
+
+var (
+	data = flag.String("data", "", "Where to grab data from.")
 )
 
 func main() {
+	flag.Parse()
+
+	if *data == "" {
+		panic("No data directory provided")
+	}
 
 	//astar  idastar  idastar_cr  KEY=alg  rbfs  rbfs_cr  rbfs_cr_global  rbfs_epsilon  rbfs_greedy  rbfs_sqrt  speedy  tmp  wastar  wrbfs_cr_global
 	filters := []map[string]string{
@@ -39,7 +49,7 @@ func main() {
 					"IDA*-cr", */
 	}
 
-	dss := rdb.GetDatasetsWithPathKeys("/Users/skiesel/Desktop/data", filters, names)
+	dss := rdb.GetDatasetsWithPathKeys(*data, filters, names)
 
 	solvedTest := func(solutionCost string) bool {
 		val, err := strconv.ParseFloat(solutionCost, 0)
