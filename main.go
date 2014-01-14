@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/skiesel/expsys/projects"
 	"flag"
+	"github.com/skiesel/expsys/projects"
 	"strings"
 )
 
@@ -11,7 +11,7 @@ var (
 )
 
 func main() {
-	flag.Parse();
+	flag.Parse()
 
 	names := strings.Split(*projectNames, " ")
 	filterNames := []string{}
