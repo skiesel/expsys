@@ -3,3 +3,6 @@ main
 *.png
 *.eps
 expsys
+projects/*
+!projects/project.go
+!projects/example_project.go
