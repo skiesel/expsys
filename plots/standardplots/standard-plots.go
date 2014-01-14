@@ -7,13 +7,14 @@ import (
 	"github.com/skiesel/expsys/plots"
 	"github.com/skiesel/expsys/rdb"
 	"strings"
+	"os"
 )
 
-func PlotSolutionCosts(title string, dss []*rdb.Dataset) {
-	PlotXvsY(title, dss, "final sol cost", "Solution Cost", "level", "Instance")
+func PlotSolutionCosts(title, directory string, dss []*rdb.Dataset) {
+	PlotXvsY(title, directory, dss, "final sol cost", "Solution Cost", "level", "Instance")
 }
 
-func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
+func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
 	p, err := plot.New()
 	if err != nil {
 		panic(err)
@@ -52,7 +53,12 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValue
 		panic(err)
 	}
 
-	plotFilename := strings.Replace(title+".eps", " ", "", -1)
+	_, err = os.Stat(directory)
+  if os.IsNotExist(err) {
+  	os.MkdirAll(directory, 0755)
+  }
+
+	plotFilename := strings.Replace(directory+"/"+title+".eps", " ", "", -1)
 
 	err = p.Save(4, 4, plotFilename)
 	if err != nil {
@@ -60,12 +66,12 @@ func PlotXvsY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValue
 	}
 }
 
-func PlotSolutionCostsFactorOfBest(title string, dss []*rdb.Dataset) {
-	PlotXvsFactorBestY(title, dss, "final sol cost", "Factor of Best Found Solution", "level", "Instance")
+func PlotSolutionCostsFactorOfBest(title, directory string, dss []*rdb.Dataset) {
+	PlotXvsFactorBestY(title, directory, dss, "final sol cost", "Factor of Best Found Solution", "level", "Instance")
 }
 
-func PlotXvsFactorBestY(title string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
+func PlotXvsFactorBestY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
 	newKey := yValuesKey + " (fact best)"
 	newDss := rdb.AddFactorBest(dss, xValuesKey, yValuesKey, newKey)
-	PlotXvsY(title, newDss, newKey, yValuesLabel, xValuesKey, xValuesLabel)
+	PlotXvsY(title, directory, newDss, newKey, yValuesLabel, xValuesKey, xValuesLabel)
 }
