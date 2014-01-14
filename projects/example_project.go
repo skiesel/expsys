@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-var (
-	_ = addProject(Project{
+func init() {
+	addProject(Project{
 		name:  "example_project",
-		build: buildExampleProjet})
-)
+		build: buildExampleProject})
+}
 
-func buildExampleProjet() {
+func buildExampleProject() {
 	//Do whatever you want in here
 	fmt.Println("Hello, World")
 }

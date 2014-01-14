@@ -26,13 +26,11 @@ func BuildProjectPlots(projectNames []string) {
 	}
 }
 
-func addProject(project Project) int {
+func addProject(project Project) {
 	_, bound := projects[project.name]
 	if !bound {
 		projects[project.name] = project
 	} else {
 		fmt.Printf("Project already exists: '%s'\n", project.name)
 	}
-
-	return 0
 }
