@@ -13,7 +13,7 @@ func GetDataset(directory string, keys map[string]string, name string, pathKeys 
 	if pathKeys {
 		ds.addPathKeys(directory)
 	}
-	return ds 
+	return ds
 }
 
 func GetDatasetWithPathKeys(directory string, keys map[string]string, name string) *Dataset {
@@ -63,7 +63,7 @@ func getKeyInDirectory(directory string) string {
 }
 
 func crawlAndCollect(directory string, filter map[string]string) []string {
-	returnPaths := make([]string, 0)
+	returnPaths := []string{}
 
 	fInfo, error := ioutil.ReadDir(directory)
 
@@ -84,7 +84,7 @@ func crawlAndCollect(directory string, filter map[string]string) []string {
 			}
 		}
 
-		directories := make([]string, 0)
+		directories := []string{}
 
 		for _, file := range fInfo {
 			filename := file.Name()

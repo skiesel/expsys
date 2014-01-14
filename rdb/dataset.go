@@ -2,7 +2,7 @@ package rdb
 
 // You guessed it, a dataset
 type Dataset struct {
-	name string
+	name      string
 	datafiles []*Datafile
 }
 
@@ -10,10 +10,13 @@ type Dataset struct {
 func newDataset(name string, files []string) *Dataset {
 	ds := new(Dataset)
 	ds.name = name
-	ds.datafiles = make([]*Datafile, len(files))
+	ds.datafiles = []*Datafile{}
 
 	for i := range files {
-		ds.datafiles[i] = newDatafileFromRDB(files[i])
+		df := newDatafileFromRDB(files[i])
+		if len(df.values) > 0 {
+			ds.datafiles = append(ds.datafiles, df)
+		}
 	}
 
 	return ds
@@ -32,9 +35,9 @@ func (ds Dataset) copyDataset() *Dataset {
 }
 
 func (ds Dataset) RenameDataset(name string) *Dataset {
-     newDss := ds.copyDataset()
-     newDss.name = name
-     return newDss
+	newDss := ds.copyDataset()
+	newDss.name = name
+	return newDss
 }
 
 func (ds Dataset) AddTransformedKey(key string, transform func(string) string, newKey string) {
@@ -45,7 +48,7 @@ func (ds Dataset) AddTransformedKey(key string, transform func(string) string, n
 
 // Filter this dataset, returning a new one, that includes datafiles whose values
 // bound to "key" cause the "include" function to return true
-func (ds Dataset) FilterDataset(include func(string)bool, key string) (filtered *Dataset) {
+func (ds Dataset) FilterDataset(include func(string) bool, key string) (filtered *Dataset) {
 	filtered = &Dataset{}
 	filtered.name = ds.name
 	for _, df := range ds.datafiles {
@@ -58,7 +61,7 @@ func (ds Dataset) FilterDataset(include func(string)bool, key string) (filtered 
 
 // Do all the datafiles in this dataset with values bound to "key"
 // cause "test" to return true
-func (ds Dataset) TestDataset(test func(string)bool, key string) bool {
+func (ds Dataset) TestDataset(test func(string) bool, key string) bool {
 	for _, df := range ds.datafiles {
 		if !test(df.getStringValue(key)) {
 			return false
@@ -104,7 +107,7 @@ func (ds Dataset) GetDatasetIntegerValues(key string) (values []int64) {
 }
 
 // Accumulate a slice of float values bound to "key" across all
-// datafiles in this dataset, but also include the associated string values 
+// datafiles in this dataset, but also include the associated string values
 // bound to "id" -- this is useful when trying to match up data based on an identifier like instance
 func (ds Dataset) GetDatasetFloatValuesPair(key string, id string) (values []float64, ids []string) {
 	for _, df := range ds.datafiles {

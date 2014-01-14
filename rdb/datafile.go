@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // Datafile -- path is the path used to construct the datafile
 type Datafile struct {
-	path string
+	path   string
 	values map[string]string
 }
 
@@ -18,7 +18,9 @@ type Datafile struct {
 func newDatafileFromRDB(filename string) *Datafile {
 	df := new(Datafile)
 	df.path = filename
-	df.values = make(map[string]string, 0)
+	df.values = map[string]string{}
+
+	completeDF := false
 
 	file, err := os.Open(filename)
 	if err == nil {
@@ -28,8 +30,15 @@ func newDatafileFromRDB(filename string) *Datafile {
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			line := scanner.Text()
+			if strings.Contains(line, "#end data file format") {
+				completeDF = true
+			}
 			df.addRDBDataRow(line)
 		}
+	}
+
+	if !completeDF {
+		df.values = map[string]string{}
 	}
 
 	return df
@@ -53,7 +62,7 @@ func (df Datafile) addRDBPathKeys(baseDirectory string) {
 	for _, keyValue := range keyValues {
 		key := getKeyInDirectory(currentPath)
 		df.checkAndAddKeyValue(key, keyValue)
-		currentPath = strings.Join([]string{currentPath, keyValue}, "/") 
+		currentPath = strings.Join([]string{currentPath, keyValue}, "/")
 	}
 }
 
@@ -94,16 +103,16 @@ func (df Datafile) dump() {
 // matches the old value
 // Otherwise there is a problem and we don't know which value to maintain
 func (df Datafile) checkAndAddKeyValue(key string, value string) {
-		boundValue, keyExists := df.values[key]
-		if keyExists {
-			if boundValue != value {
-				fmt.Printf("Trying to add mismatched values for key (\"%s\") (\"%s\", \"%s\") in %s\n",
-					key, boundValue, value, df.path)
-				panic("Datafile: Mismatched Key Values")
-			}
-		} else {
-			df.values[key] = value
+	boundValue, keyExists := df.values[key]
+	if keyExists {
+		if boundValue != value {
+			fmt.Printf("Trying to add mismatched values for key (\"%s\") (\"%s\", \"%s\") in %s\n",
+				key, boundValue, value, df.path)
+			panic("Datafile: Mismatched Key Values")
 		}
+	} else {
+		df.values[key] = value
+	}
 }
 
 func (df Datafile) addKey(key string, value string) {

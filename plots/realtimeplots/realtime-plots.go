@@ -4,15 +4,15 @@ import (
 	"code.google.com/p/plotinum/plot"
 	"code.google.com/p/plotinum/plotter"
 	"code.google.com/p/plotinum/plotutil"
-	"github.com/skiesel/expsys/rdb"
-	"github.com/skiesel/expsys/plots"
-	"strconv"
 	"fmt"
+	"github.com/skiesel/expsys/plots"
+	"github.com/skiesel/expsys/rdb"
+	"strconv"
 )
 
 func groupByWfs(groupedByLookahead map[string]*rdb.Dataset, wfs []float64) (grouped map[float64]*rdb.Dataset) {
 	for _, wf := range wfs {
-		
+
 		var maxLookahead int64
 		maxLookahead = 0
 		for lookaheadStr, ds := range groupedByLookahead {
@@ -25,7 +25,7 @@ func groupByWfs(groupedByLookahead map[string]*rdb.Dataset, wfs []float64) (grou
 			if lookahead > maxLookahead {
 				stepTimes := ds.GetDatasetFloatValues("mean step cpu time")
 				satisfiesWfVal := true
-				
+
 				for _, steptime := range stepTimes {
 					if steptime > wf {
 						satisfiesWfVal = false
@@ -44,14 +44,13 @@ func groupByWfs(groupedByLookahead map[string]*rdb.Dataset, wfs []float64) (grou
 }
 
 func TrafficCollisionWFFiltered(dss []*rdb.Dataset) {
-  p, err := plot.New()
-  if err != nil {
-          panic(err)
-  }
+	p, err := plot.New()
+	if err != nil {
+		panic(err)
+	}
 
 	wfs := []float64{1., 0.1, 0.01, 0.001, 0.0001, 0.00001}
 	groupedDss := make([]map[float64]*rdb.Dataset, len(dss))
-
 
 	for i, ds := range dss {
 		// Split the dataset up by the lookahead sizes
@@ -66,38 +65,32 @@ func TrafficCollisionWFFiltered(dss []*rdb.Dataset) {
 		groupedDss[i] = groupByWfs(groupedLookahead, wfs)
 	}
 
-
 	var plottingArgs []interface{}
 	var errorBarArgs []interface{}
 
-	for _, groupedDs := range groupedDss {		
+	for _, groupedDs := range groupedDss {
 		ptsByWfs := make([]plotter.XYer, len(wfs))
 		for i, wf := range wfs {
 			pts := make(plotter.XYs, groupedDs[wf].GetSize())
 			ptsByWfs[i] = pts
 			values := groupedDs[wf].GetDatasetIntegerValues("collisions")
-	    for j := range pts {
-	      pts[j].X = wf
-	      pts[j].Y = float64(values[j])
-	    }
+			for j := range pts {
+				pts[j].X = wf
+				pts[j].Y = float64(values[j])
+			}
 		}
 		mean95, err := plotutil.NewErrorPoints(plotutil.MeanAndConf95, ptsByWfs...)
-	  if err != nil {
+		if err != nil {
 			panic(err)
-	  }
+		}
 
-	  plottingArgs = append(plottingArgs, groupedDs[0].GetName())
-	  plottingArgs = append(plottingArgs, mean95)
-	  errorBarArgs = append(errorBarArgs, mean95)
+		plottingArgs = append(plottingArgs, groupedDs[0].GetName())
+		plottingArgs = append(plottingArgs, mean95)
+		errorBarArgs = append(errorBarArgs, mean95)
 	}
 
-  plotutil.AddLinePoints(p, plottingArgs...)
-  plotutil.AddErrorBars(p, errorBarArgs...)
+	plotutil.AddLinePoints(p, plottingArgs...)
+	plotutil.AddErrorBars(p, errorBarArgs...)
 
-  p.Save(4, 4, "trafficcollisions.png")
+	p.Save(4, 4, "trafficcollisions.png")
 }
-
-
-
-
-

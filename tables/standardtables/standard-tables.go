@@ -1,9 +1,9 @@
 package standardtables
 
 import (
+	"fmt"
 	"github.com/skiesel/expsys/rdb"
 	"github.com/skiesel/expsys/tables"
-	"fmt"
 )
 
 func SumsTable(dss []*rdb.Dataset, valuesKey string) {
@@ -20,7 +20,7 @@ func SolutionCostSumsTable(dss []*rdb.Dataset) {
 
 func MeansTable(dss []*rdb.Dataset, valuesKey string) {
 	fmt.Printf("Name\tMean\tStdDev\n")
-	for _, ds := range dss {		
+	for _, ds := range dss {
 		mean, stddev, _ := tables.MeanStdDevVariance(ds.GetDatasetFloatValues(valuesKey))
 		fmt.Printf("%s\t%f\t%f\n", ds.GetName(), mean, stddev)
 	}

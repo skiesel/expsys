@@ -21,7 +21,7 @@ func MatchKeys(targetIds []string, ids []string, values []float64) ([]string, []
 					newvalues[i] = newvalues[j]
 					newvalues[j] = temp2
 				}
-				break;
+				break
 			}
 		}
 	}
@@ -56,7 +56,7 @@ func SortBothArrays(ids []string, values []float64) ([]string, []float64) {
 
 func Group(ds *rdb.Dataset, key string) map[string]*rdb.Dataset {
 	values := ds.GetDatasetStringValues(key)
-	valueSet := make(map[string]string, 0)
+	valueSet := map[string]string{}
 	for _, value := range values {
 		_, exists := valueSet[value]
 		if !exists {
@@ -64,10 +64,10 @@ func Group(ds *rdb.Dataset, key string) map[string]*rdb.Dataset {
 		}
 	}
 
-	grouped := make(map[string]*rdb.Dataset)
+	grouped := map[string]*rdb.Dataset{}
 
 	for value, _ := range valueSet {
-		filter := func(str string)bool {
+		filter := func(str string) bool {
 			return str == value
 		}
 		grouped[value] = ds.FilterDataset(filter, key).RenameDataset(ds.GetName() + " " + value)
