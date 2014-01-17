@@ -1,7 +1,9 @@
 package datautils
 
 import (
+	"fmt"
 	"github.com/skiesel/expsys/rdb"
+	"strconv"
 )
 
 func MatchKeys(targetIds []string, ids []string, values []float64) ([]string, []float64) {
@@ -73,4 +75,13 @@ func Group(ds *rdb.Dataset, key string) map[string]*rdb.Dataset {
 		grouped[value] = ds.FilterDataset(filter, key).RenameDataset(ds.GetName() + " " + value)
 	}
 	return grouped
+}
+
+func ParseFloatOrFail(str string) float64 {
+	val, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		errstr := fmt.Sprintf("could not parse %s\n", str)
+		panic(errstr)
+	}
+	return val
 }
