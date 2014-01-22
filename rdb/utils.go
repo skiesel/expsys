@@ -100,7 +100,7 @@ func AddLog10(dss []*Dataset, key string) []*Dataset {
 	log10 := func(v string) string {
 		val, err := strconv.ParseFloat(v, 0)
 		if err != nil {
-			fmt.Printf("Could not convered (%s) to float64\n", v)
+			fmt.Printf("Could not convert (%s) to float64\n", v)
 			panic(err)
 		}
 		return strconv.FormatFloat(math.Log10(val), 'f', 15, 64)

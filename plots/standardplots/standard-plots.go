@@ -8,6 +8,8 @@ import (
 	"github.com/skiesel/expsys/plots"
 	"github.com/skiesel/expsys/rdb"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -44,7 +46,6 @@ func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLa
 		values, ids := ds.GetDatasetFloatValuesPair(yValuesKey, xValuesKey)
 
 		if i == 0 {
-			//			ids, values = datautils.SortBothArrays(ids, values)
 			targetIds = ids
 		} else {
 			ids, values = datautils.MatchKeys(targetIds, ids, values)
@@ -82,18 +83,27 @@ func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.D
 	var plottingErrorArgs []interface{}
 
 	names := map[string]bool{}
-	for _, dssGroup := range groupeddss {
+	xKeys := []float64{}
+	for xKey, dssGroup := range groupeddss {
+		xKeys = append(xKeys, datautils.ParseFloatOrFail(xKey))
 		for _, d := range dssGroup {
 			names[d.GetName()] = true
 		}
 	}
 
+	sort.Float64s(xKeys)
+	xKeyStrings := []string{}
+	for _, floatVal := range xKeys {
+		xKeyStrings = append(xKeyStrings, strconv.FormatFloat(floatVal, 'f', 1, 64))
+	}
+
 	for name, _ := range names {
 
-		datasetPointsAcrossGroups := make([]plotter.XYer, len(groupeddss))
-		currentPointSet := 0
+		datasetPointsAcrossGroups := []plotter.XYer{}
 
-		for groupKey, dssGroup := range groupeddss {
+		for _, groupKey := range xKeyStrings {
+
+			dssGroup := groupeddss[groupKey]
 
 			var ds *rdb.Dataset
 
@@ -110,23 +120,25 @@ func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.D
 			}
 
 			values := ds.GetDatasetFloatValues(yValuesKey)
-
+			if len(values) == 0 {
+				continue
+			}
 			xys := make(plotter.XYs, len(values))
-			datasetPointsAcrossGroups[currentPointSet] = xys
+			datasetPointsAcrossGroups = append(datasetPointsAcrossGroups, xys)
 
 			for i, val := range values {
 				xys[i].X = datautils.ParseFloatOrFail(groupKey)
 				xys[i].Y = val
 			}
-			currentPointSet++
 		}
 
 		mean95, err := plotutil.NewErrorPoints(plotutil.MeanAndConf95, datasetPointsAcrossGroups...)
+
 		if err != nil {
+			fmt.Println(mean95)
 			panic(err)
 		}
-		plottingPointArgs = append(plottingPointArgs, name)
-		plottingPointArgs = append(plottingPointArgs, mean95)
+		plottingPointArgs = append(plottingPointArgs, name, mean95)
 		plottingErrorArgs = append(plottingErrorArgs, mean95)
 	}
 
@@ -136,6 +148,7 @@ func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.D
 	}
 
 	p.Title.Text = title
+	p.Legend.Top = true
 	p.X.Label.Text = xValuesLabel
 	p.Y.Label.Text = yValuesLabel
 
@@ -153,4 +166,5 @@ func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.D
 	if err != nil {
 		panic(err)
 	}
+
 }

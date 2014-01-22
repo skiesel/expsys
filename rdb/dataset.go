@@ -14,7 +14,7 @@ func newDataset(name string, files []string) *Dataset {
 
 	for i := range files {
 		df := newDatafileFromRDB(files[i])
-		if len(df.values) > 0 {
+		if len(df.pairs) > 0 {
 			ds.datafiles = append(ds.datafiles, df)
 		}
 	}
@@ -125,6 +125,10 @@ func (ds Dataset) GetName() string {
 // Return the number of datafiles in the dataset
 func (ds Dataset) GetSize() int {
 	return len(ds.datafiles)
+}
+
+func (ds Dataset) Dump() {
+	ds.datafiles[0].dump()
 }
 
 // Checks if all datafiles in the dataset have "key" bound

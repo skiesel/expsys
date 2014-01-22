@@ -10,15 +10,17 @@ import (
 
 // Datafile -- path is the path used to construct the datafile
 type Datafile struct {
-	path   string
-	values map[string]string
+	path    string
+	pairs   map[string]string
+	columns map[string][][]string
 }
 
 // Construct a new datafile from the provided path/filename
 func newDatafileFromRDB(filename string) *Datafile {
 	df := new(Datafile)
 	df.path = filename
-	df.values = map[string]string{}
+	df.pairs = map[string]string{}
+	df.columns = map[string][][]string{}
 
 	completeDF := false
 
@@ -38,7 +40,7 @@ func newDatafileFromRDB(filename string) *Datafile {
 	}
 
 	if !completeDF {
-		df.values = map[string]string{}
+		df.pairs = map[string]string{}
 	}
 
 	return df
@@ -47,7 +49,7 @@ func newDatafileFromRDB(filename string) *Datafile {
 func (df Datafile) copyDatafile() *Datafile {
 	newDf := new(Datafile)
 	newDf.path = df.path
-	newDf.values = df.values
+	newDf.pairs = df.pairs
 	return newDf
 }
 
@@ -56,10 +58,10 @@ func (df Datafile) copyDatafile() *Datafile {
 func (df Datafile) addRDBPathKeys(baseDirectory string) {
 	pathPiece := strings.Replace(df.path, baseDirectory, "", -1)
 	pathPiece = strings.Trim(pathPiece, "/")
-	keyValues := strings.Split(pathPiece, "/")
+	keyPairs := strings.Split(pathPiece, "/")
 
 	currentPath := baseDirectory
-	for _, keyValue := range keyValues {
+	for _, keyValue := range keyPairs {
 		key := getKeyInDirectory(currentPath)
 		df.checkAndAddKeyValue(key, keyValue)
 		currentPath = strings.Join([]string{currentPath, keyValue}, "/")
@@ -77,41 +79,118 @@ func parseRDBKeyValuePair(str string) (key string, value string, ok bool) {
 	return
 }
 
+func parseRDBColumns(str string) (columnsName string, columns []string, ok bool) {
+	tokens := strings.Split(str, "\"")
+	for _, token := range tokens {
+		token = strings.Trim(token, " \t")
+		if token != "" && token != "#altcols" && token != "#altrow" {
+			if columnsName == "" {
+				columnsName = token
+			} else {
+				if columns == nil {
+					columns = []string{token}
+				} else {
+					columns = append(columns, token)
+				}
+			}
+		}
+	}
+	ok = true
+	return
+}
+
 // Add this RDB style row to the datafile
 func (df Datafile) addRDBDataRow(line string) {
-	if !strings.HasPrefix(line, "#pair") {
-		return
+	switch {
+	case strings.HasPrefix(line, "#pair"):
+		key, value, ok := parseRDBKeyValuePair(line)
+		if !ok {
+			return
+		}
+		df.checkAndAddKeyValue(key, value)
+
+	case strings.HasPrefix(line, "#altcols"):
+		columnsName, columnHeaders, ok := parseRDBColumns(line)
+		if !ok {
+			return
+		}
+		df.checkAndAddColumnHeaders(columnsName, columnHeaders)
+
+	case strings.HasPrefix(line, "#altrow"):
+		columnsName, columnValues, ok := parseRDBColumns(line)
+		if !ok {
+			return
+		}
+		df.checkAndAddColumnValues(columnsName, columnValues)
 	}
-	key, value, ok := parseRDBKeyValuePair(line)
-	if !ok {
-		return
-	}
-	df.checkAndAddKeyValue(key, value)
 }
 
 // Dump out datafile for debugging
 func (df Datafile) dump() {
 
 	fmt.Println(df.path)
-	for key, value := range df.values {
+	for key, value := range df.pairs {
 		fmt.Printf("\"%s\"\t\"%s\"\n", key, value)
+	}
+	for key, columnsTable := range df.columns {
+		for _, row := range columnsTable {
+			fmt.Printf("\"%s\"\t", key)
+			for _, value := range row {
+				fmt.Printf("\"%s\"\t", value)
+			}
+			fmt.Printf("\n")
+		}
 	}
 }
 
-// A safety check when trying to bind new values to the values map
+// A safety check when trying to bind new pairs to the pairs map
 // It's okay if the value you're adding is already bound if the new value
 // matches the old value
 // Otherwise there is a problem and we don't know which value to maintain
 func (df Datafile) checkAndAddKeyValue(key string, value string) {
-	boundValue, keyExists := df.values[key]
+	boundValue, keyExists := df.pairs[key]
 	if keyExists {
 		if boundValue != value {
-			fmt.Printf("Trying to add mismatched values for key (\"%s\") (\"%s\", \"%s\") in %s\n",
+			fmt.Printf("Trying to add mismatched pairs for key (\"%s\") (\"%s\", \"%s\") in %s\n",
 				key, boundValue, value, df.path)
-			panic("Datafile: Mismatched Key Values")
+			panic("Datafile: Mismatched Key pairs")
 		}
 	} else {
-		df.values[key] = value
+		df.pairs[key] = value
+	}
+}
+
+func (df Datafile) checkAndAddColumnHeaders(columnsName string, columnHeaders []string) {
+	columnsTable, keyExists := df.columns[columnsName]
+	if keyExists {
+		for i, header := range columnHeaders {
+			if columnsTable[0][i] != header {
+				fmt.Printf("Trying to add mismatched column for columns table (\"%s\") (\"%s\", \"%s\") in %s\n",
+					columnsName, columnsTable[i], header, df.path)
+				panic("Datafile: Mismatched Column headers")
+			}
+		}
+	} else {
+		df.columns[columnsName] = [][]string{}
+		df.columns[columnsName] = append(df.columns[columnsName], []string{})
+		for _, header := range columnHeaders {
+			df.columns[columnsName][0] = append(df.columns[columnsName][0], header)
+		}
+	}
+}
+
+func (df Datafile) checkAndAddColumnValues(columnsName string, columnValues []string) {
+	columnsTable, keyExists := df.columns[columnsName]
+	rows := len(columnsTable)
+	if keyExists && rows >= 1 {
+		df.columns[columnsName] = append(df.columns[columnsName], []string{})
+		for _, value := range columnValues {
+			df.columns[columnsName][rows] = append(df.columns[columnsName][rows], value)
+		}
+	} else {
+		fmt.Printf("Trying to add values to columns table without headers (\"%s\") in %s\n",
+			columnsName, df.path)
+		panic("Datafile: Missing Column Headers")
 	}
 }
 
@@ -121,13 +200,13 @@ func (df Datafile) addKey(key string, value string) {
 
 // Does this datafile have this key bound
 func (df Datafile) hasKey(key string) bool {
-	_, keyExists := df.values[key]
+	_, keyExists := df.pairs[key]
 	return keyExists
 }
 
 // Return the string value bound to "key"
 func (df Datafile) getStringValue(key string) string {
-	val, exists := df.values[key]
+	val, exists := df.pairs[key]
 
 	if !exists {
 		fmt.Printf("Key \"%s\" is unbound in %s\n", key, df.path)
