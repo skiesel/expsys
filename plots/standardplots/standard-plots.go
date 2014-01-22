@@ -27,15 +27,21 @@ func PlotXvsFactorBestY(title, directory string, dss []*rdb.Dataset, yValuesKey,
 	PlotXvsY(title, directory, newDss, newKey, yValuesLabel, xValuesKey, xValuesLabel)
 }
 
-func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
-	p, err := plot.New()
+func savePlot(title, directory string, plot *plot.Plot) {
+	_, err := os.Stat(directory)
+	if os.IsNotExist(err) {
+		os.MkdirAll(directory, 0755)
+	}
+
+	plotFilename := strings.Replace(directory+"/"+title+".eps", " ", "", -1)
+
+	err = plot.Save(4, 4, plotFilename)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	p.Title.Text = title
-	p.X.Label.Text = xValuesLabel
-	p.Y.Label.Text = yValuesLabel
+func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLabel, xValuesKey, xValuesLabel string) {
 
 	var plottingArgs []interface{}
 
@@ -60,22 +66,21 @@ func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLa
 		plottingArgs = append(plottingArgs, pts)
 	}
 
+	p, err := plot.New()
+	if err != nil {
+		panic(err)
+	}
+
+	p.Title.Text = title
+	p.X.Label.Text = xValuesLabel
+	p.Y.Label.Text = yValuesLabel
+
 	err = plotutil.AddLinePoints(p, plottingArgs...)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = os.Stat(directory)
-	if os.IsNotExist(err) {
-		os.MkdirAll(directory, 0755)
-	}
-
-	plotFilename := strings.Replace(directory+"/"+title+".eps", " ", "", -1)
-
-	err = p.Save(4, 4, plotFilename)
-	if err != nil {
-		panic(err)
-	}
+	savePlot(title, directory, p)
 }
 
 func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.Dataset, yValuesKey, yValuesLabel, xValuesLabel string) {
@@ -148,23 +153,11 @@ func PlotXvsYGroupedByXs(title, directory string, groupeddss map[string][]*rdb.D
 	}
 
 	p.Title.Text = title
-	p.Legend.Top = true
 	p.X.Label.Text = xValuesLabel
 	p.Y.Label.Text = yValuesLabel
 
 	plotutil.AddLinePoints(p, plottingPointArgs...)
 	plotutil.AddErrorBars(p, plottingErrorArgs...)
 
-	_, err = os.Stat(directory)
-	if os.IsNotExist(err) {
-		os.MkdirAll(directory, 0755)
-	}
-
-	plotFilename := strings.Replace(directory+"/"+title+".eps", " ", "", -1)
-
-	err = p.Save(4, 4, plotFilename)
-	if err != nil {
-		panic(err)
-	}
-
+	savePlot(title, directory, p)
 }

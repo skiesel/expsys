@@ -257,3 +257,31 @@ func (df Datafile) getBooleanValue(key string) bool {
 
 	return val
 }
+
+func (df Datafile) getColumnValues(tableName, key string) []string {
+	_, keyExists := df.columns[tableName]
+	if !keyExists {
+		fmt.Printf("Could not find columns table \"%s\"\n", tableName)
+		panic("Columns table not found")
+	}
+
+	columnNum := -1
+	for i, header := range df.columns[tableName][0] {
+		if  header == key {
+			columnNum = i
+			break
+		}
+	}
+	
+	if columnNum < 0 {
+		fmt.Printf("Could not find column (\"%s\") in table (\"%s\")\n", key, tableName)
+		panic("Column not found")
+	}
+
+	columnVals := make([]string, len(df.columns[tableName]) - 1)
+	for i := range columnVals {
+		columnVals[i] = df.columns[tableName][i+1][columnNum]
+	}
+
+	return columnVals
+}

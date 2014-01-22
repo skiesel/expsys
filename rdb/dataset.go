@@ -117,6 +117,20 @@ func (ds Dataset) GetDatasetFloatValuesPair(key string, id string) (values []flo
 	return
 }
 
+func (ds Dataset) GetColumnValues(table string, columns ...string) [][][]string {
+
+	columnValues := make([][][]string, len(ds.datafiles))
+
+	for i, df := range ds.datafiles {
+		columnValues[i] = make([][]string, len(columns))
+		for j, column := range columns {
+			columnValues[i][j] = df.getColumnValues(table, column)
+		}
+	}
+
+	return columnValues
+}
+
 // Return the dataset's name
 func (ds Dataset) GetName() string {
 	return ds.name
@@ -125,10 +139,6 @@ func (ds Dataset) GetName() string {
 // Return the number of datafiles in the dataset
 func (ds Dataset) GetSize() int {
 	return len(ds.datafiles)
-}
-
-func (ds Dataset) Dump() {
-	ds.datafiles[0].dump()
 }
 
 // Checks if all datafiles in the dataset have "key" bound
