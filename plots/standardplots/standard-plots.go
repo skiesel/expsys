@@ -62,8 +62,7 @@ func PlotXvsY(title, directory string, dss []*rdb.Dataset, yValuesKey, yValuesLa
 			pts[j].X = float64(j)
 			pts[j].Y = values[j]
 		}
-		plottingArgs = append(plottingArgs, ds.GetName())
-		plottingArgs = append(plottingArgs, pts)
+		plottingArgs = append(plottingArgs, ds.GetName(), pts)
 	}
 
 	p, err := plot.New()
