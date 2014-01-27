@@ -59,6 +59,15 @@ func (ds Dataset) FilterDataset(include func(string) bool, key string) (filtered
 	return
 }
 
+func (ds Dataset) CountAcrossDataset(include func(string) bool, key string) (count int64) {
+	for _, df := range ds.datafiles {
+		if include(df.getStringValue(key)) {
+			count++
+		}
+	}
+	return
+}
+
 // Do all the datafiles in this dataset with values bound to "key"
 // cause "test" to return true
 func (ds Dataset) TestDataset(test func(string) bool, key string) bool {
