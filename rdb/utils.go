@@ -14,10 +14,11 @@ func FilterOutUnsolved(dss []*Dataset, identifier string,
 
 		if i == 0 {
 			for _, df := range ds.datafiles {
-				solved[df.getStringValue(identifier)] = true
+				if df.hasKey(solvedKey) && testSolved(df.getStringValue(solvedKey)) {
+					solved[df.getStringValue(identifier)] = true
+				}
 			}
 		} else {
-
 			for key, _ := range solved {
 				isSolved := false
 				for _, df := range ds.datafiles {
