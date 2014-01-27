@@ -50,6 +50,7 @@ func (df Datafile) copyDatafile() *Datafile {
 	newDf := new(Datafile)
 	newDf.path = df.path
 	newDf.pairs = df.pairs
+	newDf.columns = df.columns
 	return newDf
 }
 
@@ -261,7 +262,8 @@ func (df Datafile) getBooleanValue(key string) bool {
 func (df Datafile) getColumnValues(tableName, key string) []string {
 	_, keyExists := df.columns[tableName]
 	if !keyExists {
-		fmt.Printf("Could not find columns table \"%s\"\n", tableName)
+		fmt.Printf("Could not find columns table \"%s\" in (%s)\n", tableName, df.path)
+		df.dump()
 		panic("Columns table not found")
 	}
 
@@ -274,7 +276,7 @@ func (df Datafile) getColumnValues(tableName, key string) []string {
 	}
 	
 	if columnNum < 0 {
-		fmt.Printf("Could not find column (\"%s\") in table (\"%s\")\n", key, tableName)
+		fmt.Printf("Could not find column (\"%s\") in table (\"%s\") in (%s)\n", key, tableName, df.path)
 		panic("Column not found")
 	}
 
