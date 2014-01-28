@@ -152,9 +152,13 @@ func (df Datafile) checkAndAddKeyValue(key string, value string) {
 	boundValue, keyExists := df.pairs[key]
 	if keyExists {
 		if boundValue != value {
-			fmt.Printf("Trying to add mismatched pairs for key (\"%s\") (\"%s\", \"%s\") in %s\n",
-				key, boundValue, value, df.path)
-			panic("Datafile: Mismatched Key pairs")
+			val1, err1 := strconv.ParseFloat(boundValue, 10)
+			val2, err2 := strconv.ParseFloat(value, 10)
+			if err1 != nil || err2 != nil || val1 != val2 {
+				fmt.Printf("Trying to add mismatched pairs for key (\"%s\") (\"%s\", \"%s\") in %s\n",
+					key, boundValue, value, df.path)
+				panic("Datafile: Mismatched Key pairs")
+			}
 		}
 	} else {
 		df.pairs[key] = value
@@ -269,18 +273,18 @@ func (df Datafile) getColumnValues(tableName, key string) []string {
 
 	columnNum := -1
 	for i, header := range df.columns[tableName][0] {
-		if  header == key {
+		if header == key {
 			columnNum = i
 			break
 		}
 	}
-	
+
 	if columnNum < 0 {
 		fmt.Printf("Could not find column (\"%s\") in table (\"%s\") in (%s)\n", key, tableName, df.path)
 		panic("Column not found")
 	}
 
-	columnVals := make([]string, len(df.columns[tableName]) - 1)
+	columnVals := make([]string, len(df.columns[tableName])-1)
 	for i := range columnVals {
 		columnVals[i] = df.columns[tableName][i+1][columnNum]
 	}
