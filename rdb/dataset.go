@@ -145,7 +145,7 @@ func (ds Dataset) GetColumnValuesWithKey(table, key string, columns ...string) [
 	columnValues := make([][][]string, len(ds.datafiles))
 
 	for i, df := range ds.datafiles {
-		columnValues[i] = make([][]string, len(columns) + 1)
+		columnValues[i] = make([][]string, len(columns)+1)
 		for j, column := range columns {
 			columnValues[i][j] = df.getColumnValues(table, column)
 		}
