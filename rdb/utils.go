@@ -11,7 +11,6 @@ func FilterOutUnsolved(dss []*Dataset, identifier string,
 	solved := map[string]bool{}
 
 	for i, ds := range dss {
-
 		if i == 0 {
 			for _, df := range ds.datafiles {
 				if df.hasKey(solvedKey) && testSolved(df.getStringValue(solvedKey)) {
