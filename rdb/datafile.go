@@ -46,6 +46,24 @@ func newDatafileFromRDB(filename string) *Datafile {
 	return df
 }
 
+type NonRDBReader func(string) (map[string]string, map[string][][]string, bool)
+
+func newDatafileFromNonRDBFormat(filename string, customReader NonRDBReader) *Datafile {
+	df := new(Datafile)
+	df.path = filename
+	df.pairs = map[string]string{}
+	df.columns = map[string][][]string{}
+
+	pairs, columns, completeDF := customReader(filename)
+
+	if completeDF {
+		df.pairs = pairs
+		df.columns = columns
+	}
+
+	return df
+}
+
 func (df Datafile) copyDatafile() *Datafile {
 	newDf := new(Datafile)
 	newDf.path = df.path

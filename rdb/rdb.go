@@ -20,10 +20,17 @@ func GetDatasetWithPathKeys(directory string, keys map[string]string, name strin
 	return GetDataset(directory, keys, name, true)
 }
 
+func GetDatasetFromNonRDBFormat(directory string, keys map[string]string, name string, addPathKeys bool, customReader NonRDBReader) *Dataset {
+	ds := newDatasetFromNonRDBFormat(name, getMatchingFiles(directory, keys), customReader)
+	if addPathKeys {
+		ds.addPathKeys(directory)
+	}
+	return ds
+}
+
 // Retrieve a set of datasets defined by the rdb path rooted at directory
 // and filtered by each key set in keys individually
 func GetDatasets(directory string, dss map[string]map[string]string, addPathKeys bool) []*Dataset {
-	
 	datasets := make([]*Dataset, len(dss))
 	i := 0
 	for dsName, dsKeys := range dss {
@@ -35,6 +42,16 @@ func GetDatasets(directory string, dss map[string]map[string]string, addPathKeys
 
 func GetDatasetsWithPathKeys(directory string, dss map[string]map[string]string) []*Dataset {
 	return GetDatasets(directory, dss, true)
+}
+
+func GetDatasetsFromNonRDBFormat(directory string, dss map[string]map[string]string, addPathKeys bool, customReader NonRDBReader) []*Dataset {
+	datasets := make([]*Dataset, len(dss))
+	i := 0
+	for dsName, dsKeys := range dss {
+		datasets[i] = GetDatasetFromNonRDBFormat(directory, dsKeys, dsName, addPathKeys, customReader)
+		i++
+	}
+	return datasets
 }
 
 // A recursive function that crawls the directory structure starting at

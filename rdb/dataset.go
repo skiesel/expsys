@@ -22,6 +22,21 @@ func newDataset(name string, files []string) *Dataset {
 	return ds
 }
 
+func newDatasetFromNonRDBFormat(name string, files []string, customReader NonRDBReader) *Dataset {
+	ds := new(Dataset)
+	ds.name = name
+	ds.datafiles = []*Datafile{}
+
+	for i := range files {
+		df := newDatafileFromNonRDBFormat(files[i], customReader)
+		if len(df.pairs) > 0 {
+			ds.datafiles = append(ds.datafiles, df)
+		}
+	}
+
+	return ds
+}
+
 func (ds Dataset) copyDataset() *Dataset {
 	newDs := new(Dataset)
 	newDs.name = ds.name
@@ -86,6 +101,15 @@ func (ds Dataset) addPathKeys(baseDirectory string) {
 	for _, df := range ds.datafiles {
 		df.addRDBPathKeys(baseDirectory)
 	}
+}
+
+// Accumulate a slice of path strings across all
+// datafiles in this dataset
+func (ds Dataset) GetDatasetPathes() (values []string) {
+	for _, df := range ds.datafiles {
+		values = append(values, df.path)
+	}
+	return
 }
 
 // Accumulate a slice of float values bound to "key" across all
