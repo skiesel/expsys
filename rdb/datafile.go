@@ -227,6 +227,11 @@ func (df Datafile) hasKey(key string) bool {
 	return keyExists
 }
 
+// Return the path to the datafile this was read from
+func (df Datafile) getPath() string {
+	return df.path
+}
+
 // Return the string value bound to "key"
 func (df Datafile) getStringValue(key string) string {
 	val, exists := df.pairs[key]
