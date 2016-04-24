@@ -1,9 +1,5 @@
 package rdb
 
-import (
-	"fmt"
-)
-
 // You guessed it, a dataset
 type Dataset struct {
 	name      string
