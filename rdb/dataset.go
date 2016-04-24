@@ -1,5 +1,9 @@
 package rdb
 
+import (
+	"fmt"
+)
+
 // You guessed it, a dataset
 type Dataset struct {
 	name      string
@@ -182,7 +186,6 @@ func (ds Dataset) GetColumnValuesWithKey(table, key string, columns ...string) [
 		}
 	}
 
-		
 	return columnValues
 }
 
@@ -195,14 +198,13 @@ func (ds Dataset) GetColumnValuesWithKeys(table string, keys []string, columns .
 		for j, column := range columns {
 			columnValues[i][j] = df.getColumnValues(table, column)
 		}
-
-		columnValues[i][len(columns)] = make([]string, len(columnValues[i][0]))
 		
 		for j, key := range keys {
+			columnValues[i][len(columns) + j] = make([]string, len(columnValues[i][0]))
 			val := df.getStringValue(key)
 			for k := range columnValues[i][len(columns) + j] {
-				columnValues[i][len(columns)+ j][k] = val
-			}	
+				columnValues[i][len(columns) + j][k] = val
+			}
 		}
 	}
 		
