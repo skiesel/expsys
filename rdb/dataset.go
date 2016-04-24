@@ -173,13 +173,39 @@ func (ds Dataset) GetColumnValuesWithKey(table, key string, columns ...string) [
 		for j, column := range columns {
 			columnValues[i][j] = df.getColumnValues(table, column)
 		}
+
 		columnValues[i][len(columns)] = make([]string, len(columnValues[i][0]))
 		val := df.getStringValue(key)
+
 		for j := range columnValues[i][len(columns)] {
 			columnValues[i][len(columns)][j] = val
 		}
 	}
 
+		
+	return columnValues
+}
+
+func (ds Dataset) GetColumnValuesWithKeys(table string, keys []string, columns ...string) [][][]string {
+
+	columnValues := make([][][]string, len(ds.datafiles))
+
+	for i, df := range ds.datafiles {
+		columnValues[i] = make([][]string, len(columns)+len(keys))
+		for j, column := range columns {
+			columnValues[i][j] = df.getColumnValues(table, column)
+		}
+
+		columnValues[i][len(columns)] = make([]string, len(columnValues[i][0]))
+		
+		for j, key := range keys {
+			val := df.getStringValue(key)
+			for k := range columnValues[i][len(columns) + j] {
+				columnValues[i][len(columns)+ j][k] = val
+			}	
+		}
+	}
+		
 	return columnValues
 }
 
